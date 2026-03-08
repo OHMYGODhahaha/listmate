@@ -6,10 +6,11 @@ import { generateListing } from '../api/generate'
 import HamburgerMenu from '../components/HamburgerMenu'
 
 const STEPS = [
-  'Analyzing images',
-  'Extracting details',
-  'Generating listing',
-  'Running QA scan',
+  { label: 'Observe',  sub: 'Reading product images & seller notes' },
+  { label: 'Reason',   sub: 'Identifying category, attributes & market context' },
+  { label: 'Act',      sub: 'Drafting optimized marketplace listing' },
+  { label: 'Reflect',  sub: 'Validating quality & marketplace fit' },
+  { label: 'Refine',   sub: 'Refining & packaging your listing…' },
 ]
 
 export default function ProcessingPage() {
@@ -20,7 +21,9 @@ export default function ProcessingPage() {
   const timerRefs = useRef([])
 
   useEffect(() => {
-    timerRefs.current = STEPS.map((_, i) =>
+    // Only advance through the first 4 steps automatically.
+    // The last step (Refine) stays "in progress" until the API responds.
+    timerRefs.current = STEPS.slice(0, -1).map((_, i) =>
       setTimeout(() => setActiveStep(i + 1), (i + 1) * 3500)
     )
 
@@ -95,7 +98,7 @@ export default function ProcessingPage() {
 
         {/* Steps */}
         <div className="w-full max-w-sm space-y-0">
-          {STEPS.map((label, i) => {
+          {STEPS.map(({ label, sub }, i) => {
             const done = i < activeStep
             const active = i === activeStep
             const waiting = i > activeStep
@@ -103,9 +106,9 @@ export default function ProcessingPage() {
               <div key={label} className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <div className={`z-10 flex size-8 items-center justify-center rounded-full ${
-                    done ? 'bg-primary text-background-dark' :
-                    active ? 'bg-primary/20 border-2 border-primary text-primary' :
-                    'bg-slate-800 border-2 border-transparent text-slate-600'
+                    done    ? 'bg-primary text-background-dark' :
+                    active  ? 'bg-primary/20 border-2 border-primary text-primary' :
+                              'bg-slate-800 border-2 border-transparent text-slate-600'
                   }`}>
                     {done ? (
                       <span className="material-symbols-outlined text-lg">check</span>
@@ -120,7 +123,10 @@ export default function ProcessingPage() {
                   )}
                 </div>
                 <div className="pt-1 pb-6">
-                  <h3 className={`text-base font-semibold ${waiting ? 'text-slate-500' : 'text-white'}`}>{label}</h3>
+                  <h3 className={`text-base font-semibold ${waiting ? 'text-slate-500' : 'text-white'}`}>
+                    <span className="text-primary/60 font-mono text-xs uppercase tracking-widest mr-2">{label}</span>
+                    {sub}
+                  </h3>
                   <p className={`text-sm font-medium ${
                     done ? 'text-primary' : active ? 'text-primary' : 'text-slate-600'
                   }`}>

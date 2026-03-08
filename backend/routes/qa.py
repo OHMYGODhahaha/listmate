@@ -25,7 +25,7 @@ async def run_qa(req: QARequest):
     listing = req.listing
 
     # Rule-based layer first (fast, deterministic)
-    rule_issues, rule_deduction = rule_based_qa(listing)
+    rule_issues, rule_deduction = rule_based_qa(listing, image_count=len(req.images))
 
     if os.environ.get('DEMO_MODE', 'false').lower() == 'true':
         score = max(0, round(10 - rule_deduction))

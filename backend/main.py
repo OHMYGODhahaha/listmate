@@ -10,7 +10,7 @@ app = FastAPI(title="ListMate API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
     allow_credentials=True,
     allow_methods=["*"],   # TODO: tighten to ["GET", "POST"] before any deployment
     allow_headers=["*"],   # TODO: tighten to ["Content-Type"] before any deployment

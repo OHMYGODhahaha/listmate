@@ -3,24 +3,28 @@ import useStore from '../store/useStore'
 import HamburgerMenu from '../components/HamburgerMenu'
 
 const ISSUE_ICONS = {
-  missing: { icon: 'flag', color: 'text-primary', bg: 'bg-primary/20' },
-  ambiguous: { icon: 'warning', color: 'text-yellow-500', bg: 'bg-yellow-500/20' },
-  mismatch: { icon: 'image_not_supported', color: 'text-yellow-500', bg: 'bg-yellow-500/20' },
+  missing:   { icon: 'add_circle',        color: 'text-primary',      bg: 'bg-primary/20' },
+  caution:   { icon: 'info',              color: 'text-yellow-500',   bg: 'bg-yellow-500/20' },
+  ambiguous: { icon: 'info',              color: 'text-yellow-500',   bg: 'bg-yellow-500/20' },
+  mismatch:  { icon: 'image_not_supported', color: 'text-yellow-500', bg: 'bg-yellow-500/20' },
 }
 
 export default function QAPage() {
   const navigate = useNavigate()
   const { qaResult } = useStore()
 
-  const score = qaResult?.risk_score ?? 0
+  // risk_score from backend is 0–10 where 10 = most risky.
+  // We display it inverted as a "Listing Quality" score: quality = 10 - risk.
+  const riskScore = qaResult?.risk_score ?? 0
+  const score = Math.max(0, 10 - riskScore)   // quality score: higher = better
   const issues = qaResult?.issues ?? []
 
   // SVG gauge: circumference = 2π * 88 ≈ 552.92
   const circ = 552.92
   const offset = circ - (score / 10) * circ
 
-  const riskLabel = score <= 3 ? 'Low Risk' : score <= 6 ? 'Medium Risk' : 'High Risk'
-  const riskColor = score <= 3 ? 'text-primary' : score <= 6 ? 'text-yellow-400' : 'text-red-400'
+  const riskLabel = score >= 8 ? 'Excellent' : score >= 6 ? 'Good' : score >= 4 ? 'Fair' : 'Needs Work'
+  const riskColor = score >= 8 ? 'text-primary' : score >= 6 ? 'text-primary' : 'text-yellow-400'
 
   return (
     <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
@@ -46,27 +50,28 @@ export default function QAPage() {
                   stroke="currentColor" strokeDasharray={circ} strokeDashoffset={offset} strokeWidth="12"
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center rotate-90">
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-4xl font-bold">{score}/10</span>
                 <span className={`text-xs font-medium uppercase tracking-widest ${riskColor}`}>{riskLabel}</span>
               </div>
             </div>
             <p className="text-slate-400 text-sm text-center max-w-xs">
-              {score <= 3
-                ? 'Your listing has a high probability of success. Fixing the issues below will further reduce return risk.'
-                : score <= 6
-                ? 'Moderate return risk. Address the flagged issues before publishing.'
-                : 'High return risk. Multiple issues need attention before this listing goes live.'}
+              {score >= 8
+                ? 'Great listing! The tips below can help fill in any gaps from your original product info.'
+                : score >= 6
+                ? 'Good listing. Consider adding the missing details below to increase buyer confidence.'
+                : 'Some key product details are missing. Adding them will significantly boost conversions.'}
             </p>
           </div>
 
           {/* Checklist */}
           <div className="px-4">
-            <h3 className="text-lg font-bold mb-4">QA Checklist</h3>
+            <h3 className="text-lg font-bold mb-1">Completeness Tips</h3>
+            <p className="text-xs text-slate-400 mb-4">Based on the details you provided — add these to your listing for even better results.</p>
             {issues.length === 0 ? (
               <div className="flex items-center gap-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
                 <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
-                <p className="text-sm font-semibold">No issues found — listing looks great!</p>
+                <p className="text-sm font-semibold">All key details present — listing is complete!</p>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -85,7 +90,7 @@ export default function QAPage() {
                         onClick={() => navigate('/listing')}
                         className="flex px-3 py-1.5 items-center justify-center rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-xs font-bold transition-colors"
                       >
-                        Fix it
+                        Add
                       </button>
                     </div>
                   )

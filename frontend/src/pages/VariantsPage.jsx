@@ -3,36 +3,75 @@ import { useNavigate } from 'react-router-dom'
 import useStore from '../store/useStore'
 import HamburgerMenu from '../components/HamburgerMenu'
 
-const DEFAULT_VARIANTS = [
-  { size: 'S', color: 'Blue', price: '129.99', stock: 24 },
-  { size: 'M', color: 'Black', price: '129.99', stock: 18 },
-  { size: 'L', color: 'Blue', price: '134.99', stock: 42 },
-  { size: 'XL', color: 'Blue', price: '139.99', stock: 12 },
+const CATEGORY_OPTIONS = ['Size', 'Color', 'Material', 'Style', 'Pattern', 'Scent', 'Flavor', 'Custom']
+
+const DEFAULT_TYPES = [
+  { id: 1, type: 'Size',  options: ['S', 'M', 'L', 'XL'], price: '' },
+  { id: 2, type: 'Color', options: ['Black', 'White'],     price: '' },
 ]
+
+let nextId = 10
+
+function OptionChip({ value, onRemove }) {
+  return (
+    <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">
+      {value}
+      <button onClick={onRemove} className="hover:text-red-400 transition-colors leading-none">×</button>
+    </span>
+  )
+}
 
 export default function VariantsPage() {
   const navigate = useNavigate()
   const { jobResult } = useStore()
-  const [variants, setVariants] = useState(jobResult?.variants?.length ? jobResult.variants : DEFAULT_VARIANTS)
-  const [visible, setVisible] = useState(true)
-  const [bulkPrice, setBulkPrice] = useState('')
-  const [bulkStock, setBulkStock] = useState('')
 
-  const update = (i, field, value) => {
-    const v = [...variants]
-    v[i] = { ...v[i], [field]: value }
-    setVariants(v)
+  // Seed from store variants if present, otherwise defaults
+  const seedTypes = jobResult?.variants?.length
+    ? (() => {
+        const byType = {}
+        jobResult.variants.forEach((v) => {
+          if (v.size  && !byType['Size'])  byType['Size']  = { id: nextId++, type: 'Size',  options: [], price: v.price ?? '' }
+          if (v.color && !byType['Color']) byType['Color'] = { id: nextId++, type: 'Color', options: [], price: v.price ?? '' }
+          if (v.size)  byType['Size'].options.push(v.size)
+          if (v.color) byType['Color'].options.push(v.color)
+        })
+        // Deduplicate options
+        Object.values(byType).forEach((t) => { t.options = [...new Set(t.options)] })
+        return Object.values(byType)
+      })()
+    : DEFAULT_TYPES
+
+  const [types, setTypes] = useState(seedTypes)
+  const [inputValues, setInputValues] = useState({}) // {id: currentInputText}
+
+  const updateType = (id, field, value) =>
+    setTypes((prev) => prev.map((t) => t.id === id ? { ...t, [field]: value } : t))
+
+  const addOption = (id) => {
+    const val = (inputValues[id] ?? '').trim()
+    if (!val) return
+    setTypes((prev) => prev.map((t) =>
+      t.id === id && !t.options.includes(val)
+        ? { ...t, options: [...t.options, val] }
+        : t
+    ))
+    setInputValues((prev) => ({ ...prev, [id]: '' }))
   }
 
-  const addRow = () => setVariants([...variants, { size: '', color: 'Blue', price: '0.00', stock: 0 }])
-  const removeRow = (i) => setVariants(variants.filter((_, idx) => idx !== i))
-  const applyBulkPrice = () => { if (bulkPrice) setVariants(variants.map(v => ({ ...v, price: bulkPrice }))) }
-  const applyBulkStock = () => { if (bulkStock) setVariants(variants.map(v => ({ ...v, stock: parseInt(bulkStock) || 0 }))) }
+  const removeOption = (id, opt) =>
+    setTypes((prev) => prev.map((t) =>
+      t.id === id ? { ...t, options: t.options.filter((o) => o !== opt) } : t
+    ))
+
+  const removeType = (id) => setTypes((prev) => prev.filter((t) => t.id !== id))
+
+  const addType = () =>
+    setTypes((prev) => [...prev, { id: nextId++, type: 'Size', options: [], price: '' }])
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
       <header className="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b border-primary/20 p-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/listing')} className="p-2 rounded-lg hover:bg-primary/10">
               <span className="material-symbols-outlined text-primary">arrow_back</span>
@@ -40,103 +79,118 @@ export default function VariantsPage() {
             <h1 className="text-xl font-bold">Manage Variants</h1>
           </div>
           <div className="flex gap-3 items-center">
-            <button onClick={() => navigate('/listing')} className="px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/5">
-              Back to Listing
-            </button>
-            <button onClick={() => navigate('/qa')} className="px-4 py-2 rounded-lg bg-primary text-background-dark font-bold flex items-center gap-2">
+            <button
+              onClick={() => navigate('/qa')}
+              className="px-4 py-2 rounded-lg bg-primary text-background-dark font-bold flex items-center gap-2 hover:opacity-90"
+            >
               <span className="material-symbols-outlined text-[20px]">check</span>
-              Save & Continue
+              Done
             </button>
             <HamburgerMenu />
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Toggle */}
-        <section className="bg-primary/5 border border-primary/20 rounded-xl p-5 flex items-center justify-between">
-          <div>
-            <p className="text-lg font-bold">Show/Hide Variants</p>
-            <p className="text-sm text-slate-500">Toggle visibility in store</p>
-          </div>
-          <label className="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:bg-primary">
-            <div className="h-full w-[27px] rounded-full bg-white shadow-md" />
-            <input type="checkbox" checked={visible} onChange={e => setVisible(e.target.checked)} className="invisible absolute" />
-          </label>
-        </section>
+      <main className="max-w-2xl mx-auto p-4 space-y-4 pb-16">
+        <p className="text-sm text-slate-500 dark:text-slate-400 pt-2">
+          Add each variant dimension (e.g. Size, Color) and list the available options.
+        </p>
 
-        {/* Table */}
-        <div className="overflow-x-auto bg-background-light dark:bg-background-dark border border-primary/10 rounded-xl shadow-sm">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-primary/5 border-b border-primary/20 text-left">
-                {['Size', 'Color', 'Price ($)', 'Stock (Units)', 'Action'].map(h => (
-                  <th key={h} className="p-4 font-semibold text-sm uppercase tracking-wider text-primary">{h}</th>
+        {types.map((t) => (
+          <div key={t.id} className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+            {/* Row 1: category selector + price + delete */}
+            <div className="flex items-center gap-3">
+              <select
+                value={t.type}
+                onChange={(e) => updateType(t.id, 'type', e.target.value)}
+                className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              >
+                {CATEGORY_OPTIONS.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-primary/10">
-              {variants.map((v, i) => (
-                <tr key={i} className="hover:bg-primary/5 transition-colors">
-                  <td className="p-4">
-                    <input value={v.size} onChange={e => update(i, 'size', e.target.value)} className="w-16 bg-background-light dark:bg-slate-800 border border-primary/20 rounded-lg text-sm px-2 py-1 focus:ring-primary" />
-                  </td>
-                  <td className="p-4">
-                    <select value={v.color} onChange={e => update(i, 'color', e.target.value)} className="bg-background-light dark:bg-slate-800 border border-primary/20 rounded-lg text-sm focus:ring-primary">
-                      {['Blue', 'Black', 'Red', 'White', 'Green'].map(c => <option key={c}>{c}</option>)}
-                    </select>
-                  </td>
-                  <td className="p-4">
-                    <input type="number" value={v.price} onChange={e => update(i, 'price', e.target.value)} className="w-24 bg-background-light dark:bg-slate-800 border border-primary/20 rounded-lg text-sm focus:ring-primary" />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => update(i, 'stock', Math.max(0, v.stock - 1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/20 hover:bg-primary/30 text-primary">-</button>
-                      <input type="number" value={v.stock} onChange={e => update(i, 'stock', parseInt(e.target.value)||0)} className="bg-transparent border-none text-center w-12 font-medium focus:ring-0" />
-                      <button onClick={() => update(i, 'stock', v.stock + 1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/20 hover:bg-primary/30 text-primary">+</button>
-                    </div>
-                  </td>
-                  <td className="p-4 text-right">
-                    <button onClick={() => removeRow(i)} className="text-slate-400 hover:text-red-500 transition-colors">
-                      <span className="material-symbols-outlined">delete</span>
-                    </button>
-                  </td>
-                </tr>
+              </select>
+
+              <div className="flex items-center gap-1 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-900 w-32">
+                <span className="text-slate-400 text-sm">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={t.price}
+                  onChange={(e) => updateType(t.id, 'price', e.target.value)}
+                  placeholder="Price"
+                  className="w-full bg-transparent text-sm outline-none focus:ring-0 border-none p-0"
+                />
+              </div>
+
+              <button
+                onClick={() => removeType(t.id)}
+                className="text-slate-400 hover:text-red-400 transition-colors p-1"
+              >
+                <span className="material-symbols-outlined text-[20px]">delete</span>
+              </button>
+            </div>
+
+            {/* Row 2: option chips + add input */}
+            <div className="flex flex-wrap items-center gap-2">
+              {t.options.map((opt) => (
+                <OptionChip key={opt} value={opt} onRemove={() => removeOption(t.id, opt)} />
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-center pt-2">
-          <button onClick={addRow} className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-dashed border-primary/40 text-primary font-bold hover:bg-primary/5 hover:border-primary transition-all">
-            <span className="material-symbols-outlined">add_circle</span>
-            Add Variant Row
-          </button>
-        </div>
-
-        {/* Bulk ops */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-          <div className="p-4 rounded-xl border border-primary/10 bg-primary/5">
-            <h3 className="font-bold mb-2 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">auto_fix_high</span>Bulk Price Update
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Set the same price for all variants at once.</p>
-            <div className="flex gap-2">
-              <input value={bulkPrice} onChange={e => setBulkPrice(e.target.value)} className="flex-1 bg-background-light dark:bg-slate-800 border border-primary/20 rounded-lg text-sm px-3 py-2 focus:ring-primary" placeholder="$ 0.00" />
-              <button onClick={applyBulkPrice} className="px-4 py-2 bg-primary/20 text-primary rounded-lg font-bold text-sm">Apply</button>
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={inputValues[t.id] ?? ''}
+                  onChange={(e) => setInputValues((prev) => ({ ...prev, [t.id]: e.target.value }))}
+                  onKeyDown={(e) => e.key === 'Enter' && addOption(t.id)}
+                  placeholder={`Add ${t.type.toLowerCase()}…`}
+                  className="text-sm border border-dashed border-slate-300 dark:border-slate-600 rounded-full px-3 py-1 bg-transparent outline-none focus:border-primary w-36 placeholder:text-slate-400"
+                />
+                <button
+                  onClick={() => addOption(t.id)}
+                  className="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary/30 transition-colors text-lg leading-none"
+                >+</button>
+              </div>
             </div>
           </div>
-          <div className="p-4 rounded-xl border border-primary/10 bg-primary/5">
-            <h3 className="font-bold mb-2 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">inventory_2</span>Bulk Stock Update
+        ))}
+
+        {/* Add variant type */}
+        <button
+          onClick={addType}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-primary/30 text-primary font-bold hover:bg-primary/5 hover:border-primary transition-all"
+        >
+          <span className="material-symbols-outlined">add_circle</span>
+          Add Variant Type
+        </button>
+
+        {/* Bulk price */}
+        {types.length > 1 && (
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+            <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[18px]">auto_fix_high</span>
+              Set Same Price for All
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Set global stock level for all variants.</p>
             <div className="flex gap-2">
-              <input value={bulkStock} onChange={e => setBulkStock(e.target.value)} className="flex-1 bg-background-light dark:bg-slate-800 border border-primary/20 rounded-lg text-sm px-3 py-2 focus:ring-primary" placeholder="Quantity" />
-              <button onClick={applyBulkStock} className="px-4 py-2 bg-primary/20 text-primary rounded-lg font-bold text-sm">Apply</button>
+              <input
+                id="bulk-price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="$ 0.00"
+                className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              />
+              <button
+                onClick={() => {
+                  const val = document.getElementById('bulk-price').value
+                  if (val) setTypes((prev) => prev.map((t) => ({ ...t, price: val })))
+                }}
+                className="px-4 py-2 bg-primary/20 text-primary rounded-lg font-bold text-sm hover:bg-primary/30 transition-colors"
+              >
+                Apply
+              </button>
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )
