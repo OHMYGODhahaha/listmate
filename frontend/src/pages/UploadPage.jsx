@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import useStore from '../store/useStore'
 import ModelSelector from '../components/ModelSelector'
 
@@ -15,6 +15,11 @@ const MARKETPLACES = [
 export default function UploadPage() {
   const navigate = useNavigate()
   const { images, notes, marketplace, setImages, setNotes, setMarketplace } = useStore()
+
+  const imageUrls = useMemo(
+    () => images.map((img) => URL.createObjectURL(img)),
+    [images]
+  )
 
   const onDrop = useCallback((accepted) => {
     setImages([...images, ...accepted].slice(0, 5))
@@ -59,37 +64,27 @@ export default function UploadPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-2">Upload Photos</h2>
           <p className="text-slate-600 dark:text-slate-400 mb-4">Add 3-5 clear photos for best AI results.</p>
-          <div className="grid grid-cols-3 gap-3">
-            {/* First slot — dropzone */}
-            <div
-              {...getRootProps()}
-              className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center gap-2 bg-slate-50 dark:bg-slate-900/50 hover:border-primary transition-colors cursor-pointer"
-            >
-              <input {...getInputProps()} />
-              {images[0] ? (
-                <img src={URL.createObjectURL(images[0])} className="w-full h-full object-cover rounded-xl" alt="upload 1" />
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-primary">add_a_photo</span>
-                  <span className="text-xs font-medium">Main</span>
-                </>
-              )}
+          <div {...getRootProps()} className="cursor-pointer">
+            <input {...getInputProps()} />
+            <div className="grid grid-cols-3 gap-3">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center gap-2 bg-slate-50 dark:bg-slate-900/50 hover:border-primary transition-colors overflow-hidden"
+                >
+                  {imageUrls[i] ? (
+                    <img src={imageUrls[i]} className="w-full h-full object-cover" alt={`upload ${i + 1}`} />
+                  ) : i === 0 ? (
+                    <>
+                      <span className="material-symbols-outlined text-primary">add_a_photo</span>
+                      <span className="text-xs font-medium">Main</span>
+                    </>
+                  ) : (
+                    <span className="material-symbols-outlined text-slate-400">add</span>
+                  )}
+                </div>
+              ))}
             </div>
-            {/* Slots 2-3 */}
-            {[1, 2].map((i) => (
-              <div
-                key={i}
-                {...getRootProps()}
-                className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 hover:border-primary transition-colors cursor-pointer text-slate-400"
-              >
-                <input {...getInputProps()} />
-                {images[i] ? (
-                  <img src={URL.createObjectURL(images[i])} className="w-full h-full object-cover rounded-xl" alt={`upload ${i+1}`} />
-                ) : (
-                  <span className="material-symbols-outlined">add</span>
-                )}
-              </div>
-            ))}
           </div>
           {images.length > 0 && (
             <p className="text-xs text-primary mt-2">{images.length} photo{images.length > 1 ? 's' : ''} selected</p>
@@ -151,11 +146,15 @@ export default function UploadPage() {
           Generate Listing
         </button>
         <nav className="flex justify-around items-center pt-2">
-          {[['upload','Upload'],['list_alt','Listings'],['bar_chart','Insights'],['settings','Settings']].map(([icon, label]) => (
-            <a key={icon} className={`flex flex-col items-center gap-1 ${icon === 'upload' ? 'text-primary' : 'text-slate-400'}`} href="#">
+          <Link to="/upload" className="flex flex-col items-center gap-1 text-primary">
+            <span className="material-symbols-outlined">upload</span>
+            <span className="text-[10px] font-bold uppercase tracking-tighter">Upload</span>
+          </Link>
+          {[['list_alt','Listings'],['bar_chart','Insights'],['settings','Settings']].map(([icon, label]) => (
+            <span key={icon} className="flex flex-col items-center gap-1 text-slate-400">
               <span className="material-symbols-outlined">{icon}</span>
               <span className="text-[10px] font-bold uppercase tracking-tighter">{label}</span>
-            </a>
+            </span>
           ))}
         </nav>
       </div>
