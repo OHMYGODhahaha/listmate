@@ -42,9 +42,7 @@ export default function ProcessingPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between p-6">
         <div className="flex items-center gap-2">
-          <div className="size-10 bg-primary/20 rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary">bolt</span>
-          </div>
+          <img src="/logo.png" alt="ListMate" className="size-10 rounded-lg" />
           <span className="text-xl font-bold tracking-tight">ListMate</span>
         </div>
       </nav>

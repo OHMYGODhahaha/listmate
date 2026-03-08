@@ -41,9 +41,7 @@ export default function UploadPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="material-symbols-outlined text-background-dark">bolt</span>
-          </div>
+          <img src="/logo.png" alt="ListMate" className="size-8 rounded-lg" />
           <h1 className="text-xl font-bold tracking-tight">ListMate</h1>
         </div>
         <button className="size-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800">
