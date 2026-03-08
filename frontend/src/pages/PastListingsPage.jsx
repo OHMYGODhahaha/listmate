@@ -26,7 +26,7 @@ const HARDCODED_HISTORY = [
     title: 'Nike Air Max 270 — Men\'s US 10 — White/Black',
     marketplace: 'ebay',
     date: '2026-03-05',
-    riskScore: 5,
+    riskScore: 2,
     thumbnail: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&q=60',
   },
   {
@@ -59,11 +59,16 @@ const MARKETPLACE_LABELS = {
   amazon: 'Amazon', etsy: 'Etsy', ebay: 'eBay', walmart: 'Walmart', shopify: 'Shopify',
 }
 
-function RiskBadge({ score }) {
-  if (score === 0) return <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Perfect</span>
-  if (score <= 3)  return <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{score}/10 Low</span>
-  if (score <= 6)  return <span className="text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full">{score}/10 Med</span>
-  return               <span className="text-xs font-bold text-red-400 bg-red-400/10 px-2 py-0.5 rounded-full">{score}/10 High</span>
+// riskScore is the raw backend value (lower = better).
+// We display as quality = 10 - riskScore (higher = better), matching QAPage.
+function RiskBadge({ riskScore }) {
+  if (riskScore === null || riskScore === undefined)
+    return <span className="text-xs font-bold text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded-full">Pending</span>
+  const q = 10 - riskScore
+  if (q >= 9) return <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{q}/10 ★</span>
+  if (q >= 8) return <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{q}/10</span>
+  if (q >= 6) return <span className="text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full">{q}/10</span>
+  return <span className="text-xs font-bold text-red-400 bg-red-400/10 px-2 py-0.5 rounded-full">{q}/10</span>
 }
 
 export default function PastListingsPage() {
@@ -124,7 +129,7 @@ export default function PastListingsPage() {
                 </div>
 
                 {/* Risk badge */}
-                <RiskBadge score={item.riskScore} />
+                <RiskBadge riskScore={item.riskScore} />
               </div>
             </div>
           )

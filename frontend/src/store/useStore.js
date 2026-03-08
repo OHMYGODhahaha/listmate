@@ -32,6 +32,11 @@ const useStore = create((set) => ({
   addToHistory: (entry) => set((s) => ({
     listingHistory: [entry, ...s.listingHistory],
   })),
+  updateLatestHistoryScore: (riskScore) => set((s) => {
+    if (s.listingHistory.length === 0) return {}
+    const [latest, ...rest] = s.listingHistory
+    return { listingHistory: [{ ...latest, riskScore }, ...rest] }
+  }),
   updateListing: (patch) =>
     set((s) => ({
       jobResult: {

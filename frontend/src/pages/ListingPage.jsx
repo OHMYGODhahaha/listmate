@@ -6,7 +6,7 @@ import HamburgerMenu from '../components/HamburgerMenu'
 
 export default function ListingPage() {
   const navigate = useNavigate()
-  const { images, jobResult, updateListing, modelConfig, setQaResult, apiKeys } = useStore()
+  const { images, jobResult, updateListing, modelConfig, setQaResult, apiKeys, updateLatestHistoryScore } = useStore()
   const listing = jobResult?.listing ?? {
     title: '',
     bullets: ['', '', '', '', ''],
@@ -35,6 +35,7 @@ export default function ListingPage() {
     try {
       const qa = await runQA({ listing, images, modelConfig, apiKeys })
       setQaResult(qa)
+      updateLatestHistoryScore(qa.risk_score ?? 0)
     } catch (e) {
       console.error(e)
     } finally {

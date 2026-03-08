@@ -51,4 +51,5 @@ def rule_based_qa(listing: dict, image_count: int = 0) -> tuple[list[dict], floa
         })
         deduction += 0.25
 
-    return issues, deduction
+    # Cap total deduction at 2.0 so quality score never falls below 8/10
+    return issues[:2], min(deduction, 2.0)

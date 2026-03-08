@@ -101,11 +101,14 @@ export default function QAPage() {
           </div>
         </div>
 
-        {/* Publish (disabled) */}
+        {/* Export button */}
         <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-full max-w-md px-4 pb-4">
-          <button disabled className="w-full flex items-center justify-center gap-2 h-14 bg-slate-200 dark:bg-slate-800 text-slate-500 font-bold rounded-xl cursor-not-allowed border border-slate-300 dark:border-slate-700">
-            <span>Publish</span>
-            <span className="text-[10px] bg-slate-300 dark:bg-slate-700 px-2 py-0.5 rounded-full">COMING SOON</span>
+          <button
+            onClick={() => navigate('/export-success')}
+            className="w-full flex items-center justify-center gap-2 h-14 bg-primary text-background-dark font-bold rounded-xl shadow-lg shadow-primary/20 hover:brightness-105 active:scale-[0.98] transition-all"
+          >
+            <span className="material-symbols-outlined text-lg">send</span>
+            <span>Export to Seller Account</span>
           </button>
         </div>
 
