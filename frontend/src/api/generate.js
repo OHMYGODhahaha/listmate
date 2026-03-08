@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE = 'http://localhost:8000/api'
+const BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api'
 
 export async function generateListing({ images, notes, marketplace, modelConfig }) {
   const form = new FormData()

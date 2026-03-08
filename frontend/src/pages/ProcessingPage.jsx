@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import useStore from '../store/useStore'
@@ -16,11 +16,11 @@ export default function ProcessingPage() {
   const { images, notes, marketplace, modelConfig, setJobResult } = useStore()
   const [activeStep, setActiveStep] = useState(0)
   const [error, setError] = useState(null)
+  const timerRefs = useRef([])
 
   useEffect(() => {
-    // Animate steps while API call runs
-    const timers = STEPS.map((_, i) =>
-      setTimeout(() => setActiveStep(i), i * 3500)
+    timerRefs.current = STEPS.map((_, i) =>
+      setTimeout(() => setActiveStep(i + 1), (i + 1) * 3500)
     )
 
     generateListing({ images, notes, marketplace, modelConfig })
@@ -30,10 +30,11 @@ export default function ProcessingPage() {
       })
       .catch((err) => {
         console.error(err)
+        timerRefs.current.forEach(clearTimeout)  // stop the animation
         setError('Something went wrong. Please try again.')
       })
 
-    return () => timers.forEach(clearTimeout)
+    return () => timerRefs.current.forEach(clearTimeout)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -70,7 +71,17 @@ export default function ProcessingPage() {
           <p className="text-slate-400 max-w-xs mx-auto">
             ListMate is crafting your perfect listing. This usually takes 15-30 seconds.
           </p>
-          {error && <p className="text-red-400 mt-4 text-sm">{error}</p>}
+          {error && (
+            <div className="text-center mt-4">
+              <p className="text-red-400 text-sm mb-3">{error}</p>
+              <button
+                onClick={() => navigate('/upload')}
+                className="px-6 py-2 bg-primary text-background-dark rounded-lg font-bold text-sm hover:opacity-90 transition-opacity"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Steps */}
