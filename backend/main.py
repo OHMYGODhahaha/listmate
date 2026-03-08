@@ -12,8 +12,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],   # TODO: tighten to ["GET", "POST"] before any deployment
+    allow_headers=["*"],   # TODO: tighten to ["Content-Type"] before any deployment
 )
 
 app.include_router(generate_router, prefix="/api")
