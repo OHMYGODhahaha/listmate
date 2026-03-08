@@ -5,11 +5,11 @@ import useStore from '../store/useStore'
 import ModelSelector from '../components/ModelSelector'
 
 const MARKETPLACES = [
-  { id: 'amazon', label: 'Amazon' },
-  { id: 'etsy', label: 'Etsy' },
-  { id: 'ebay', label: 'eBay' },
-  { id: 'walmart', label: 'Walmart' },
-  { id: 'shopify', label: 'Shopify' },
+  { id: 'amazon',  label: 'Amazon',  logo: '/marketplaces/amazon.png' },
+  { id: 'etsy',    label: 'Etsy',    logo: '/marketplaces/etsy.png' },
+  { id: 'ebay',    label: 'eBay',    logo: '/marketplaces/ebay.png' },
+  { id: 'walmart', label: 'Walmart', logo: '/marketplaces/walmart.svg' },
+  { id: 'shopify', label: 'Shopify', logo: '/marketplaces/shopify.png' },
 ]
 
 export default function UploadPage() {
@@ -108,16 +108,16 @@ export default function UploadPage() {
         <section className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Select Marketplace</h2>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-            {MARKETPLACES.map(({ id, label }) => (
+            {MARKETPLACES.map(({ id, label, logo }) => (
               <button
                 key={id}
                 onClick={() => setMarketplace(id)}
                 className="flex-shrink-0 flex flex-col items-center gap-2"
               >
-                <div className={`size-16 rounded-xl bg-white dark:bg-slate-800 border-2 flex items-center justify-center p-2 shadow-sm transition-all active:scale-95 ${
+                <div className={`size-16 rounded-xl bg-white dark:bg-white border-2 flex items-center justify-center p-2 shadow-sm transition-all active:scale-95 ${
                   marketplace === id ? 'border-primary' : 'border-slate-200 dark:border-slate-700'
                 }`}>
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">{label.slice(0,2)}</span>
+                  <img src={logo} alt={label} className="w-full h-full object-contain" />
                 </div>
                 <span className={`text-xs font-medium ${marketplace === id ? 'text-primary' : 'opacity-60'}`}>
                   {label}
