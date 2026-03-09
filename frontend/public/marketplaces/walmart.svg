@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" role="img" aria-label="Walmart">
+  <!-- Spark symbol (6 petals) -->
+  <g transform="translate(22,40)">
+    <!-- Each petal: a rounded lozenge shape rotated 60° apart -->
+    <ellipse cx="0" cy="-11" rx="4" ry="9" fill="#FFC220" transform="rotate(0)"/>
+    <ellipse cx="0" cy="-11" rx="4" ry="9" fill="#FFC220" transform="rotate(60)"/>
+    <ellipse cx="0" cy="-11" rx="4" ry="9" fill="#FFC220" transform="rotate(120)"/>
+    <ellipse cx="0" cy="-11" rx="4" ry="9" fill="#FFC220" transform="rotate(180)"/>
+    <ellipse cx="0" cy="-11" rx="4" ry="9" fill="#FFC220" transform="rotate(240)"/>
+    <ellipse cx="0" cy="-11" rx="4" ry="9" fill="#FFC220" transform="rotate(300)"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="48" y="47" font-family="Bogle, Arial, sans-serif" font-size="26" font-weight="700" fill="#0071CE" letter-spacing="-0.5">Walmart</text>
+</svg>
